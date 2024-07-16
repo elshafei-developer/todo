@@ -1,17 +1,19 @@
 import "./App.css";
-import { todosContext } from "./contexts/todosContext";
-import PostList from "./components/PostList";
-import { useState } from "react";
+import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Home from "./components/Home";
+import About from "./components/About";
+import Contact from "./components/Contact";
 
-function App() {
-  const [todos, setTodos] = useState([]);
+export default function App() {
   return (
-    <div className="App">
-      <todosContext.Provider value={{ todos, setTodos }}>
-        <PostList />
-      </todosContext.Provider>
-    </div>
+    <Router>
+      <Navbar />
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
+      </Routes>
+    </Router>
   );
 }
-
-export default App;

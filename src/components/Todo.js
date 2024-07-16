@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextField from "@mui/material/TextField";
 
-// ICONS
+// material ui icons
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import IconButton from "@mui/material/IconButton";
@@ -14,14 +14,14 @@ import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutl
 import { useContext, useState } from "react";
 import { todosContext } from "../contexts/todosContext";
 
-// DIALOG IMPORTS
+// material dialog
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
-export default function Post({ todo, handleCheck }) {
+export default function Todo({ todo }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [updatedTodo, setUpdatedTodo] = useState({
@@ -30,10 +30,9 @@ export default function Post({ todo, handleCheck }) {
   });
   const { todos, setTodos } = useContext(todosContext);
 
-  // EVENT HANDLERS
-  function handleCheckClick() {
+  function handleCheckTodo() {
     const updatedTodos = todos.map((t) => {
-      if (t.id == todo.id) {
+      if (t.id === todo.id) {
         t.isCompleted = !t.isCompleted;
       }
       return t;
@@ -60,7 +59,7 @@ export default function Post({ todo, handleCheck }) {
 
   function handleDeleteConfirm() {
     const updatedTodos = todos.filter((t) => {
-      return t.id != todo.id;
+      return t.id !== todo.id;
     });
 
     setTodos(updatedTodos);
@@ -69,7 +68,7 @@ export default function Post({ todo, handleCheck }) {
 
   function handleUpdateConfirm() {
     const updatedTodos = todos.map((t) => {
-      if (t.id == todo.id) {
+      if (t.id === todo.id) {
         return { ...t, title: updatedTodo.title, details: updatedTodo.details };
       } else {
         return t;
@@ -81,17 +80,9 @@ export default function Post({ todo, handleCheck }) {
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
   }
 
-  // ====== EVENT HANDLERS ======
   return (
     <>
-      {/* DELETE DIALOG */}
-      <Dialog
-        style={{ direction: "rtl" }}
-        onClose={handleDeleteDialogClose}
-        open={showDeleteDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
+      <Dialog onClose={handleDeleteDialogClose} open={showDeleteDialog}>
         <DialogTitle id="alert-dialog-title">
           هل أنت متأكد من رغبتك في حذف المهمة؟
         </DialogTitle>
@@ -107,11 +98,8 @@ export default function Post({ todo, handleCheck }) {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* === DELETE DIALOG === */}
 
-      {/* UPDATE DIALOG */}
       <Dialog
-        style={{ direction: "rtl" }}
         onClose={handleUpdateClose}
         open={showUpdateDialog}
         aria-labelledby="alert-dialog-title"
@@ -152,7 +140,6 @@ export default function Post({ todo, handleCheck }) {
           </Button>
         </DialogActions>
       </Dialog>
-      {/* === UPDATE DIALOG */}
       <Card
         className="todoCard"
         sx={{
@@ -180,17 +167,15 @@ export default function Post({ todo, handleCheck }) {
               </Typography>
             </Grid>
 
-            {/* ACTION BUTTONS */}
             <Grid
               xs={4}
               display="flex"
               justifyContent="space-around"
               alignItems="center"
             >
-              {/* CHECK ICON BUTTON */}
               <IconButton
                 onClick={() => {
-                  handleCheckClick();
+                  handleCheckTodo();
                 }}
                 className="iconButton"
                 aria-label="delete"
@@ -202,9 +187,7 @@ export default function Post({ todo, handleCheck }) {
               >
                 <CheckIcon />
               </IconButton>
-              {/*== CHECK ICON BUTTON ==*/}
 
-              {/* UPDATE BUTTON */}
               <IconButton
                 onClick={handleUpdateClick}
                 className="iconButton"
@@ -217,9 +200,7 @@ export default function Post({ todo, handleCheck }) {
               >
                 <ModeEditOutlineOutlinedIcon />
               </IconButton>
-              {/*== UPDATE BUTTON ==*/}
 
-              {/* DELETE BUTTON */}
               <IconButton
                 className="iconButton"
                 aria-label="delete"
@@ -232,9 +213,7 @@ export default function Post({ todo, handleCheck }) {
               >
                 <DeleteOutlineOutlinedIcon />
               </IconButton>
-              {/*=== DELETE BUTTON ===*/}
             </Grid>
-            {/*== ACTION BUTTONS ==*/}
           </Grid>
         </CardContent>
       </Card>

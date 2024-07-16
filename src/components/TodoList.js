@@ -1,7 +1,7 @@
 // Components
-import Post from "./Post";
+import Todo from "./Todo";
 
-// MUI
+// material ui
 import * as React from "react";
 import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
@@ -13,44 +13,46 @@ import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextField from "@mui/material/TextField";
-// UUID
+
+// unique id
 import { v4 as uuidv4 } from "uuid";
 
-// OTHERS
 import { todosContext } from "../contexts/todosContext";
 import { useContext, useState, useEffect } from "react";
 
-export default function PostList() {
+export default function TodoList() {
   const { todos, setTodos } = useContext(todosContext);
-
   const [titleInput, setTitleInput] = useState("");
   const [displayedTodosType, setDisplayedTodosType] = useState("all");
 
-  // filteration arrays
-  const completedTodos = todos.filter((todo) => {
-    return todo.isCompleted;
-  });
+  function completedTodos() {
+    let completed = todos.filter((todo) => {
+      return todo.isCompleted;
+    });
+    return completed;
+  }
+  function notCompletedTodos() {
+    let notCompleted = todos.filter((todo) => {
+      return !todo.isCompleted;
+    });
+    return notCompleted;
+  }
 
-  const notCompletedTodos = todos.filter((todo) => {
-    return !todo.isCompleted;
-  });
-
-  let todosToBeRendered = todos;
+  let todosToBeRendered = [];
 
   if (displayedTodosType === "completed") {
-    todosToBeRendered = completedTodos;
+    todosToBeRendered = completedTodos();
   } else if (displayedTodosType === "non-completed") {
-    todosToBeRendered = notCompletedTodos;
+    todosToBeRendered = notCompletedTodos();
   } else {
     todosToBeRendered = todos;
   }
 
-  const todosJsx = todosToBeRendered.map((t) => {
-    return <Post key={t.id} todo={t} />;
+  const todosJsx = todosToBeRendered.map((todo) => {
+    return <Todo key={todo.id} todo={todo} />;
   });
 
   useEffect(() => {
-    console.log("calling use effect");
     const storageTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
     setTodos(storageTodos);
   }, []);
@@ -58,7 +60,7 @@ export default function PostList() {
   function changeDisplayedType(e) {
     setDisplayedTodosType(e.target.value);
   }
-  function handleAddClick() {
+  function handleAddTodo() {
     const newTodo = {
       id: uuidv4(),
       title: titleInput,
@@ -66,10 +68,22 @@ export default function PostList() {
       isCompleted: false,
     };
 
-    const updatedTodos = [...todos, newTodo];
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
-    setTitleInput("");
+    if (!newTodo.title) {
+      console.error("Invalid input data");
+      return;
+    }
+    const backupTodos = [...todos];
+
+    try {
+      const updatedTodos = [...todos, newTodo];
+      setTodos(updatedTodos);
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      setTitleInput("");
+    } catch (error) {
+      console.error("Error adding todo:", error);
+      setTodos(backupTodos);
+      localStorage.setItem("todos", JSON.stringify(backupTodos));
+    }
   }
 
   return (
@@ -87,26 +101,21 @@ export default function PostList() {
           </Typography>
           <Divider />
 
-          {/* FILTER BUTTONS */}
           <ToggleButtonGroup
-            style={{ direction: "ltr", marginTop: "30px" }}
+            style={{ marginTop: "30px" }}
             value={displayedTodosType}
             exclusive
             onChange={changeDisplayedType}
             aria-label="text alignment"
             color="primary"
           >
-            <ToggleButton value="non-completed">غير المنجز</ToggleButton>
-            <ToggleButton value="completed">المنجز</ToggleButton>
             <ToggleButton value="all">الكل</ToggleButton>
+            <ToggleButton value="completed">المنجز</ToggleButton>
+            <ToggleButton value="non-completed">غير المنجز</ToggleButton>
           </ToggleButtonGroup>
-          {/* ==== FILTER BUTTON ==== */}
 
-          {/* ALL TODOS */}
           {todosJsx}
-          {/* === ALL TODOS === */}
 
-          {/* INPUT + ADD BUTTON */}
           <Grid container style={{ marginTop: "20px" }} spacing={2}>
             <Grid
               xs={8}
@@ -136,7 +145,7 @@ export default function PostList() {
                 style={{ width: "100%", height: "100%" }}
                 variant="contained"
                 onClick={() => {
-                  handleAddClick();
+                  handleAddTodo();
                 }}
                 disabled={titleInput.length === 0}
               >
@@ -144,7 +153,6 @@ export default function PostList() {
               </Button>
             </Grid>
           </Grid>
-          {/*== INPUT + ADD BUTTON ==*/}
         </CardContent>
       </Card>
     </Container>
