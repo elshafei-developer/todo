@@ -19,6 +19,7 @@ import { v4 as uuidv4 } from "uuid";
 
 import { todosContext } from "../contexts/todosContext";
 import { useContext, useState, useEffect } from "react";
+import { clear } from "@testing-library/user-event/dist/clear";
 
 export default function TodoList() {
   const { todos, setTodos } = useContext(todosContext);
@@ -50,13 +51,13 @@ export default function TodoList() {
 
   function completedTodos() {
     let completed = todos.filter((todo) => {
-      return todo.isCompleted;
+      return todo.completed;
     });
     return completed;
   }
   function notCompletedTodos() {
     let notCompleted = todos.filter((todo) => {
-      return !todo.isCompleted;
+      return !todo.completed;
     });
     return notCompleted;
   }
@@ -77,29 +78,35 @@ export default function TodoList() {
   function changeDisplayedType(e) {
     setDisplayedTodosType(e.target.value);
   }
-  function handleAddTodo() {
-    const newTodo = {
-      id: uuidv4(),
-      title: titleInput,
-      details: "",
-      isCompleted: false,
-    };
-
-    if (!newTodo.title) {
+  async function handleAddTodo() {
+    if (!titleInput) {
       console.error("Invalid input data");
       return;
     }
-    const backupTodos = [...todos];
-
     try {
+      const newTodo = {
+        id: uuidv4(),
+        title: titleInput,
+        details: "",
+        completed: false,
+      };
+      let addTodo = await fetch("https://jsonplaceholder.typicode.com/todos", {
+        method: "POST",
+        body: JSON.stringify(newTodo),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      });
+
+      if (!addTodo.ok) {
+        throw new Error("cannot add todo to the server");
+      }
       const updatedTodos = [...todos, newTodo];
       setTodos(updatedTodos);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
       setTitleInput("");
     } catch (error) {
-      console.error("Error adding todo:", error);
-      setTodos(backupTodos);
-      localStorage.setItem("todos", JSON.stringify(backupTodos));
+      console.error("Server Error ", error);
     }
   }
 

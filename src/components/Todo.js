@@ -33,7 +33,7 @@ export default function Todo({ todo }) {
   function handleCheckTodo() {
     const updatedTodos = todos.map((t) => {
       if (t.id === todo.id) {
-        t.isCompleted = !t.isCompleted;
+        t.completed = !t.completed;
       }
       return t;
     });
@@ -156,7 +156,7 @@ export default function Todo({ todo }) {
                 variant="h5"
                 sx={{
                   textAlign: "right",
-                  textDecoration: todo.isCompleted ? "line-through" : "none",
+                  textDecoration: todo.completed ? "line-through" : "none",
                 }}
               >
                 {todo.title}
@@ -180,8 +180,8 @@ export default function Todo({ todo }) {
                 className="iconButton"
                 aria-label="delete"
                 style={{
-                  color: todo.isCompleted ? "white" : "#8bc34a",
-                  background: todo.isCompleted ? "#8bc34a" : "white",
+                  color: todo.completed ? "white" : "#8bc34a",
+                  background: todo.completed ? "#8bc34a" : "white",
                   border: "solid #8bc34a 3px",
                 }}
               >
