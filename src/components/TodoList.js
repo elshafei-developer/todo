@@ -24,7 +24,10 @@ import Notification from "./Notification";
 export default function TodoList() {
   const { todos, setTodos } = useContext(todosContext);
   const [titleInput, setTitleInput] = useState("");
-  const [notification, setNotification] = useState({ open: false });
+  const [notification, setNotification] = useState({
+    open: false,
+    message: "",
+  });
 
   const [visibleCount, setVisibleCount] = useState(5);
 
@@ -33,55 +36,44 @@ export default function TodoList() {
   useEffect(() => {
     async function fetchData(url) {
       try {
-        let data = await fetch(url);
-        let todos = await data.json();
-
+        const response = await fetch(url);
+        const todos = await response.json();
         // if the data is empty object
         if (!Array.isArray(todos)) {
           throw new Error("Data is not an array");
         }
-        let todosToBeRendered = todos.slice(0, visibleCount);
-        localStorage.setItem("todos", JSON.stringify(todosToBeRendered));
-        setTodos(todosToBeRendered);
+        const initialTodos = todos.slice(0, visibleCount);
+        localStorage.setItem("todos", JSON.stringify(initialTodos));
+        setTodos(initialTodos);
       } catch (error) {
-        const storageTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
-        console.log("storageTodo", storageTodos);
-        setTodos(storageTodos);
+        setNotification({
+          open: true,
+          message: "حدث خطأ أثناء جلب المهام",
+          severity: "error",
+        });
+        setTimeout(() => {
+          setNotification({ open: false });
+        }, 2000);
+        const storedTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
+        setTodos(storedTodos);
         console.error("Error fetching todos:", error);
       }
     }
     fetchData("https://jsonplaceholder.typicode.com/todos");
   }, [setTodos, visibleCount]);
 
-  function completedTodos() {
-    let completed = todos.filter((todo) => {
-      return todo.completed;
-    });
-    return completed;
-  }
-  function notCompletedTodos() {
-    let notCompleted = todos.filter((todo) => {
-      return !todo.completed;
-    });
-    return notCompleted;
-  }
-  let todosToBeRendered = [];
+  const filterTodos = (type) => {
+    if (type === "completed") {
+      return todos.filter((todo) => todo.completed);
+    } else if (type === "non-completed") {
+      return todos.filter((todo) => !todo.completed);
+    } else {
+      return todos;
+    }
+  };
 
-  if (displayedTodosType === "completed") {
-    todosToBeRendered = completedTodos();
-  } else if (displayedTodosType === "non-completed") {
-    todosToBeRendered = notCompletedTodos();
-  } else {
-    todosToBeRendered = todos;
-  }
+  const todosToBeRendered = filterTodos(displayedTodosType);
 
-  const todosJsx = todosToBeRendered.map((todo) => {
-    return <Todo key={todo.id} todo={todo} setNotification={setNotification} />;
-  });
-
-  function changeDisplayedType(e) {
-    setDisplayedTodosType(e.target.value);
-  }
   async function handleAddTodo() {
     if (!titleInput) {
       console.error("Invalid input data");
@@ -94,15 +86,18 @@ export default function TodoList() {
         details: "",
         completed: false,
       };
-      let addTodo = await fetch("https://jsonplaceholder.typicode.com/todos", {
-        method: "POST",
-        body: JSON.stringify(newTodo),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      });
+      const response = await fetch(
+        "https://jsonplaceholder.typicode.com/todos",
+        {
+          method: "POST",
+          body: JSON.stringify(newTodo),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
 
-      if (!addTodo.ok) {
+      if (!response.ok) {
         throw new Error("cannot add todo to the server");
       }
       const updatedTodos = [...todos, newTodo];
@@ -115,14 +110,18 @@ export default function TodoList() {
         severity: "success",
       });
       setTimeout(() => {
-        setNotification({
-          open: false,
-          message: "تمت الاضافة بنجاح",
-          severity: "success",
-        });
+        setNotification({ open: false });
       }, 2000);
     } catch (error) {
-      console.error("Server Error :", error);
+      setNotification({
+        open: true,
+        message: "حدث خطأ أثناء إضافة المهمة",
+        severity: "error",
+      });
+      setTimeout(() => {
+        setNotification({ open: false });
+      }, 2000);
+      console.error("Server Error:", error);
     }
   }
   const showMore = () => {
@@ -133,10 +132,7 @@ export default function TodoList() {
     <Container maxWidth="sm">
       <Card
         sx={{ minWidth: 275 }}
-        style={{
-          maxHeight: "90vh",
-          overflow: "scroll",
-        }}
+        style={{ maxHeight: "90vh", overflow: "scroll" }}
       >
         <CardContent>
           <Typography variant="h2" style={{ fontWeight: "bold" }}>
@@ -148,8 +144,7 @@ export default function TodoList() {
             style={{ marginTop: "30px" }}
             value={displayedTodosType}
             exclusive
-            onChange={changeDisplayedType}
-            aria-label="text alignment"
+            onChange={(e, newType) => setDisplayedTodosType(newType)}
             color="primary"
           >
             <ToggleButton value="all">الكل</ToggleButton>
@@ -157,9 +152,12 @@ export default function TodoList() {
             <ToggleButton value="non-completed">غير المنجز</ToggleButton>
           </ToggleButtonGroup>
 
-          {todosJsx}
+          {todosToBeRendered.map((todo) => (
+            <Todo key={todo.id} todo={todo} setNotification={setNotification} />
+          ))}
+
           <Button
-            style={{ marginTop: "20px" }}
+            style={{ display: "block", margin: "20px auto" }}
             variant="contained"
             onClick={() => {
               showMore();
@@ -186,9 +184,7 @@ export default function TodoList() {
                 label="عنوان المهمة"
                 variant="outlined"
                 value={titleInput}
-                onChange={(e) => {
-                  setTitleInput(e.target.value);
-                }}
+                onChange={(e) => setTitleInput(e.target.value)}
               />
             </Grid>
 

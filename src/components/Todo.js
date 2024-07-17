@@ -1,25 +1,25 @@
+// material ui
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import Grid from "@mui/material/Unstable_Grid2";
 import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
 
-// material ui icons
 import CheckIcon from "@mui/icons-material/Check";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import IconButton from "@mui/material/IconButton";
+
 import ModeEditOutlineOutlinedIcon from "@mui/icons-material/ModeEditOutlineOutlined";
 
-import { useContext, useState } from "react";
-import { todosContext } from "../contexts/todosContext";
-
-// material dialog
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
+
+import { useContext, useState } from "react";
+import { todosContext } from "../contexts/todosContext";
 
 export default function Todo({ todo, setNotification }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -30,124 +30,68 @@ export default function Todo({ todo, setNotification }) {
   });
   const { todos, setTodos } = useContext(todosContext);
 
-  async function handleCheckTodo() {
+  // Function to handle checking/unchecking a todo item
+  const handleCheckTodo = async () => {
     try {
-      let updateTodo = await fetch(
+      const response = await fetch(
         `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
         {
           method: "PUT",
-          body: JSON.stringify({
-            completed: !todo.completed,
-          }),
-          headers: {
-            "Content-type": "application/json; charset=UTF-8",
-          },
+          body: JSON.stringify({ completed: !todo.completed }),
+          headers: { "Content-type": "application/json; charset=UTF-8" },
         }
       );
-      if (updateTodo.status !== 200) {
-        throw new Error("cannot update todo");
-      }
-      const updatedTodos = todos.map((t) => {
-        if (t.id === todo.id) {
-          t.completed = !t.completed;
-        }
-        return t;
-      });
+
+      if (!response.ok) throw new Error("Cannot update todo");
+
+      const updatedTodos = todos.map((t) =>
+        t.id === todo.id ? { ...t, completed: !t.completed } : t
+      );
       setTodos(updatedTodos);
-      setNotification({
-        open: true,
-        message: "تم تحديث حالة المهام!",
-        severity: "success",
-      });
-      setTimeout(() => {
-        setNotification({
-          open: false,
-          message: "تم تحديث حالة المهام!",
-          severity: "success",
-        });
-      }, 2000);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      triggerNotification("تم تحديث حالة المهام!", "success");
     } catch (error) {
-      setNotification({
-        open: true,
-        message: "حدث خطأ أثناء تحديث المهمة",
-        severity: "error",
-      });
-      setTimeout(() => {
-        setNotification({
-          open: false,
-          message: "حدث خطأ أثناء تحديث المهمة",
-          severity: "error",
-        });
-      }, 2000);
       console.error("Server Error :", error);
+      triggerNotification("حدث خطأ أثناء تحديث المهمة", "error");
     }
-  }
+  };
 
-  function handleDeleteClick() {
-    setShowDeleteDialog(true);
-  }
+  // Function to trigger notification
+  const triggerNotification = (message, severity) => {
+    setNotification({ open: true, message, severity });
+    setTimeout(() => {
+      setNotification({ open: false, message, severity });
+    }, 2000);
+  };
 
-  function handleUpdateClick() {
-    setShowUpdateDialog(true);
-  }
-
-  function handleDeleteDialogClose() {
-    setShowDeleteDialog(false);
-  }
-
-  function handleUpdateClose() {
-    setShowUpdateDialog(false);
-  }
+  const handleDeleteClick = () => setShowDeleteDialog(true);
+  const handleUpdateClick = () => setShowUpdateDialog(true);
+  const handleDeleteDialogClose = () => setShowDeleteDialog(false);
+  const handleUpdateDialogClose = () => setShowUpdateDialog(false);
 
   async function handleDeleteConfirm() {
     try {
-      let deletedTodo = await fetch(
+      const response = await fetch(
         `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
         {
           method: "DELETE",
         }
       );
-      if (deletedTodo.status !== 200) {
-        throw new Error("cannot delete todo");
-      }
-      const updatedTodos = todos.filter((t) => {
-        return t.id !== todo.id;
-      });
+      if (!response.ok) throw new Error("Cannot delete todo");
+      const updatedTodos = todos.filter((t) => t.id !== todo.id);
+
       setTodos(updatedTodos);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
-      setNotification({
-        open: true,
-        message: "تم الحذف بنجاح!",
-        severity: "success",
-      });
-      setTimeout(() => {
-        setNotification({
-          open: false,
-          message: "تم الحذف بنجاح!",
-          severity: "success",
-        });
-      }, 2000);
+      triggerNotification("تم الحذف بنجاح!", "success");
     } catch (error) {
-      setNotification({
-        open: true,
-        message: "حدث خطأ أثناء حذف المهمة",
-        severity: "error",
-      });
-      setTimeout(() => {
-        setNotification({
-          open: false,
-          message: "حدث خطأ أثناء حذف المهمة",
-          severity: "error",
-        });
-      }, 2000);
       console.error("Server Error :", error);
+      triggerNotification("حدث خطأ أثناء حذف المهمة", "error");
     }
   }
 
-  async function handleUpdateConfirm() {
+  const handleUpdateConfirm = async () => {
     try {
-      let updateTodo = await fetch(
+      const response = await fetch(
         `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
         {
           method: "PUT",
@@ -160,39 +104,22 @@ export default function Todo({ todo, setNotification }) {
           },
         }
       );
-      if (updateTodo.status !== 200) {
-        throw new Error("cannot update todo");
-      }
-      const updatedTodos = todos.map((t) => {
-        if (t.id === todo.id) {
-          return {
-            ...t,
-            title: updatedTodo.title,
-            details: updatedTodo.details,
-          };
-        } else {
-          return t;
-        }
-      });
+      if (!response.ok) throw new Error("Cannot update todo");
+
+      const updatedTodos = todos.map((t) =>
+        t.id === todo.id
+          ? { ...t, title: updatedTodo.title, details: updatedTodo.details }
+          : t
+      );
       setTodos(updatedTodos);
-      setShowUpdateDialog(false);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
-      setNotification({
-        open: true,
-        message: "تم تحديث المهمة بنجاح!",
-        severity: "success",
-      });
-      setTimeout(() => {
-        setNotification({
-          open: true,
-          message: "تم تحديث المهمة بنجاح!",
-          severity: "success",
-        });
-      }, 2000);
+      setShowUpdateDialog(false);
+      triggerNotification("تم تحديث المهمة بنجاح!", "success");
     } catch (error) {
       console.error("Server Error :", error);
+      triggerNotification("حدث خطاء", "error");
     }
-  }
+  };
 
   return (
     <>
@@ -201,7 +128,7 @@ export default function Todo({ todo, setNotification }) {
           هل أنت متأكد من رغبتك في حذف المهمة؟
         </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
+          <DialogContentText>
             لا يمكنك التراجع عن الحذف بعد إتمامه
           </DialogContentText>
         </DialogContent>
@@ -213,12 +140,7 @@ export default function Todo({ todo, setNotification }) {
         </DialogActions>
       </Dialog>
 
-      <Dialog
-        onClose={handleUpdateClose}
-        open={showUpdateDialog}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
+      <Dialog onClose={handleUpdateDialogClose} open={showUpdateDialog}>
         <DialogTitle id="alert-dialog-title">تعديل مهمة</DialogTitle>
         <DialogContent>
           <TextField
@@ -229,9 +151,9 @@ export default function Todo({ todo, setNotification }) {
             fullWidth
             variant="standard"
             value={updatedTodo.title}
-            onChange={(e) => {
-              setUpdatedTodo({ ...updatedTodo, title: e.target.value });
-            }}
+            onChange={(e) =>
+              setUpdatedTodo({ ...updatedTodo, title: e.target.value })
+            }
           />
 
           <TextField
@@ -241,14 +163,14 @@ export default function Todo({ todo, setNotification }) {
             label="التفاصيل"
             fullWidth
             variant="standard"
-            value={updatedTodo.details ? updatedTodo.details : ""}
-            onChange={(e) => {
-              setUpdatedTodo({ ...updatedTodo, details: e.target.value });
-            }}
+            value={updatedTodo.details || ""}
+            onChange={(e) =>
+              setUpdatedTodo({ ...updatedTodo, details: e.target.value })
+            }
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleUpdateClose}>إغلاق</Button>
+          <Button onClick={handleUpdateDialogClose}>إغلاق</Button>
           <Button autoFocus onClick={handleUpdateConfirm}>
             تأكيد
           </Button>
@@ -288,9 +210,7 @@ export default function Todo({ todo, setNotification }) {
               alignItems="center"
             >
               <IconButton
-                onClick={() => {
-                  handleCheckTodo();
-                }}
+                onClick={handleCheckTodo}
                 className="iconButton"
                 style={{
                   color: todo.completed ? "white" : "#8bc34a",
@@ -304,7 +224,7 @@ export default function Todo({ todo, setNotification }) {
               <IconButton
                 onClick={handleUpdateClick}
                 className="iconButton"
-                aria-label="delete"
+                aria-label="edit"
                 style={{
                   color: "#1769aa",
                   background: "white",
@@ -315,6 +235,7 @@ export default function Todo({ todo, setNotification }) {
               </IconButton>
 
               <IconButton
+                onClick={handleDeleteClick}
                 className="iconButton"
                 aria-label="delete"
                 style={{
@@ -322,7 +243,6 @@ export default function Todo({ todo, setNotification }) {
                   background: "white",
                   border: "solid #b23c17 3px",
                 }}
-                onClick={handleDeleteClick}
               >
                 <DeleteOutlineOutlinedIcon />
               </IconButton>
