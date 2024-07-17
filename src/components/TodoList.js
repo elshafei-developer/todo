@@ -25,6 +25,29 @@ export default function TodoList() {
   const [titleInput, setTitleInput] = useState("");
   const [displayedTodosType, setDisplayedTodosType] = useState("all");
 
+  useEffect(() => {
+    async function fetchData(url) {
+      try {
+        let data = await fetch(url);
+        let todos = await data.json();
+
+        // if the data is empty object
+        if (!Array.isArray(todos)) {
+          throw new Error("Data is not an array");
+        }
+        let todosToBeRendered = todos.slice(0, 3);
+        localStorage.setItem("todos", JSON.stringify(todosToBeRendered));
+        setTodos(todosToBeRendered);
+      } catch (error) {
+        const storageTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
+        console.log("storageTodo", storageTodos);
+        setTodos(storageTodos);
+        console.error("Error fetching todos:", error);
+      }
+    }
+    fetchData("https://jsonplaceholder.typicode.com/todos");
+  }, [setTodos]);
+
   function completedTodos() {
     let completed = todos.filter((todo) => {
       return todo.isCompleted;
@@ -37,7 +60,6 @@ export default function TodoList() {
     });
     return notCompleted;
   }
-
   let todosToBeRendered = [];
 
   if (displayedTodosType === "completed") {
@@ -51,11 +73,6 @@ export default function TodoList() {
   const todosJsx = todosToBeRendered.map((todo) => {
     return <Todo key={todo.id} todo={todo} />;
   });
-
-  useEffect(() => {
-    const storageTodos = JSON.parse(localStorage.getItem("todos")) ?? [];
-    setTodos(storageTodos);
-  }, []);
 
   function changeDisplayedType(e) {
     setDisplayedTodosType(e.target.value);
