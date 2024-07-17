@@ -19,7 +19,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import { todosContext } from "../contexts/todosContext";
 import { useContext, useState, useEffect } from "react";
-import { clear } from "@testing-library/user-event/dist/clear";
 
 export default function TodoList() {
   const { todos, setTodos } = useContext(todosContext);

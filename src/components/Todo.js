@@ -30,15 +30,34 @@ export default function Todo({ todo }) {
   });
   const { todos, setTodos } = useContext(todosContext);
 
-  function handleCheckTodo() {
-    const updatedTodos = todos.map((t) => {
-      if (t.id === todo.id) {
-        t.completed = !t.completed;
+  async function handleCheckTodo() {
+    try {
+      let updateTodo = await fetch(
+        `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            completed: !todo.completed,
+          }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      if (updateTodo.status !== 200) {
+        throw new Error("cannot update todo");
       }
-      return t;
-    });
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      const updatedTodos = todos.map((t) => {
+        if (t.id === todo.id) {
+          t.completed = !t.completed;
+        }
+        return t;
+      });
+      setTodos(updatedTodos);
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    } catch (error) {
+      console.error("Server Error :", error);
+    }
   }
 
   function handleDeleteClick() {
@@ -60,7 +79,7 @@ export default function Todo({ todo }) {
   async function handleDeleteConfirm() {
     try {
       let deletedTodo = await fetch(
-        `https://jsonplaceholder.typicode.com/todos1/${todo.id}`,
+        `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
         {
           method: "DELETE",
         }
@@ -78,18 +97,41 @@ export default function Todo({ todo }) {
     }
   }
 
-  function handleUpdateConfirm() {
-    const updatedTodos = todos.map((t) => {
-      if (t.id === todo.id) {
-        return { ...t, title: updatedTodo.title, details: updatedTodo.details };
-      } else {
-        return t;
+  async function handleUpdateConfirm() {
+    try {
+      let updateTodo = await fetch(
+        `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+        {
+          method: "PUT",
+          body: JSON.stringify({
+            title: updatedTodo.title,
+            details: updatedTodo.details,
+          }),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        }
+      );
+      if (updateTodo.status !== 200) {
+        throw new Error("cannot update todo");
       }
-    });
-
-    setTodos(updatedTodos);
-    setShowUpdateDialog(false);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      const updatedTodos = todos.map((t) => {
+        if (t.id === todo.id) {
+          return {
+            ...t,
+            title: updatedTodo.title,
+            details: updatedTodo.details,
+          };
+        } else {
+          return t;
+        }
+      });
+      setTodos(updatedTodos);
+      setShowUpdateDialog(false);
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    } catch (error) {
+      console.error("Server Error :", error);
+    }
   }
 
   return (
@@ -139,7 +181,7 @@ export default function Todo({ todo }) {
             label="التفاصيل"
             fullWidth
             variant="standard"
-            value={updatedTodo.details}
+            value={updatedTodo.details ? updatedTodo.details : ""}
             onChange={(e) => {
               setUpdatedTodo({ ...updatedTodo, details: e.target.value });
             }}
@@ -190,7 +232,6 @@ export default function Todo({ todo }) {
                   handleCheckTodo();
                 }}
                 className="iconButton"
-                aria-label="delete"
                 style={{
                   color: todo.completed ? "white" : "#8bc34a",
                   background: todo.completed ? "#8bc34a" : "white",
