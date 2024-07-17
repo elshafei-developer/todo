@@ -23,6 +23,8 @@ import { useContext, useState, useEffect } from "react";
 export default function TodoList() {
   const { todos, setTodos } = useContext(todosContext);
   const [titleInput, setTitleInput] = useState("");
+  const [visibleCount, setVisibleCount] = useState(5);
+
   const [displayedTodosType, setDisplayedTodosType] = useState("all");
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function TodoList() {
         if (!Array.isArray(todos)) {
           throw new Error("Data is not an array");
         }
-        let todosToBeRendered = todos.slice(0, 3);
+        let todosToBeRendered = todos.slice(0, visibleCount);
         localStorage.setItem("todos", JSON.stringify(todosToBeRendered));
         setTodos(todosToBeRendered);
       } catch (error) {
@@ -46,7 +48,7 @@ export default function TodoList() {
       }
     }
     fetchData("https://jsonplaceholder.typicode.com/todos");
-  }, [setTodos]);
+  }, [setTodos, visibleCount]);
 
   function completedTodos() {
     let completed = todos.filter((todo) => {
@@ -108,6 +110,9 @@ export default function TodoList() {
       console.error("Server Error :", error);
     }
   }
+  const showMore = () => {
+    setVisibleCount((prevCount) => prevCount + 5);
+  };
 
   return (
     <Container maxWidth="sm">
@@ -138,7 +143,15 @@ export default function TodoList() {
           </ToggleButtonGroup>
 
           {todosJsx}
-
+          <Button
+            style={{ marginTop: "20px" }}
+            variant="contained"
+            onClick={() => {
+              showMore();
+            }}
+          >
+            المزيد
+          </Button>
           <Grid container style={{ marginTop: "20px" }} spacing={2}>
             <Grid
               xs={8}
