@@ -19,10 +19,13 @@ import { v4 as uuidv4 } from "uuid";
 
 import { todosContext } from "../contexts/todosContext";
 import { useContext, useState, useEffect } from "react";
+import Notification from "./Notification";
 
 export default function TodoList() {
   const { todos, setTodos } = useContext(todosContext);
   const [titleInput, setTitleInput] = useState("");
+  const [notification, setNotification] = useState({ open: false });
+
   const [visibleCount, setVisibleCount] = useState(5);
 
   const [displayedTodosType, setDisplayedTodosType] = useState("all");
@@ -73,7 +76,7 @@ export default function TodoList() {
   }
 
   const todosJsx = todosToBeRendered.map((todo) => {
-    return <Todo key={todo.id} todo={todo} />;
+    return <Todo key={todo.id} todo={todo} setNotification={setNotification} />;
   });
 
   function changeDisplayedType(e) {
@@ -106,6 +109,18 @@ export default function TodoList() {
       setTodos(updatedTodos);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
       setTitleInput("");
+      setNotification({
+        open: true,
+        message: "تمت الاضافة بنجاح",
+        severity: "success",
+      });
+      setTimeout(() => {
+        setNotification({
+          open: false,
+          message: "تمت الاضافة بنجاح",
+          severity: "success",
+        });
+      }, 2000);
     } catch (error) {
       console.error("Server Error :", error);
     }
@@ -152,6 +167,12 @@ export default function TodoList() {
           >
             المزيد
           </Button>
+          <Notification
+            open={notification.open}
+            message={notification.message}
+            severity={notification.severity}
+          />
+
           <Grid container style={{ marginTop: "20px" }} spacing={2}>
             <Grid
               xs={8}

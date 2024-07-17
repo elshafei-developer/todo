@@ -21,7 +21,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
-export default function Todo({ todo }) {
+export default function Todo({ todo, setNotification }) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showUpdateDialog, setShowUpdateDialog] = useState(false);
   const [updatedTodo, setUpdatedTodo] = useState({
@@ -54,8 +54,32 @@ export default function Todo({ todo }) {
         return t;
       });
       setTodos(updatedTodos);
+      setNotification({
+        open: true,
+        message: "تم تحديث حالة المهام!",
+        severity: "success",
+      });
+      setTimeout(() => {
+        setNotification({
+          open: false,
+          message: "تم تحديث حالة المهام!",
+          severity: "success",
+        });
+      }, 2000);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
     } catch (error) {
+      setNotification({
+        open: true,
+        message: "حدث خطأ أثناء تحديث المهمة",
+        severity: "error",
+      });
+      setTimeout(() => {
+        setNotification({
+          open: false,
+          message: "حدث خطأ أثناء تحديث المهمة",
+          severity: "error",
+        });
+      }, 2000);
       console.error("Server Error :", error);
     }
   }
@@ -92,7 +116,31 @@ export default function Todo({ todo }) {
       });
       setTodos(updatedTodos);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      setNotification({
+        open: true,
+        message: "تم الحذف بنجاح!",
+        severity: "success",
+      });
+      setTimeout(() => {
+        setNotification({
+          open: false,
+          message: "تم الحذف بنجاح!",
+          severity: "success",
+        });
+      }, 2000);
     } catch (error) {
+      setNotification({
+        open: true,
+        message: "حدث خطأ أثناء حذف المهمة",
+        severity: "error",
+      });
+      setTimeout(() => {
+        setNotification({
+          open: false,
+          message: "حدث خطأ أثناء حذف المهمة",
+          severity: "error",
+        });
+      }, 2000);
       console.error("Server Error :", error);
     }
   }
@@ -129,6 +177,18 @@ export default function Todo({ todo }) {
       setTodos(updatedTodos);
       setShowUpdateDialog(false);
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
+      setNotification({
+        open: true,
+        message: "تم تحديث المهمة بنجاح!",
+        severity: "success",
+      });
+      setTimeout(() => {
+        setNotification({
+          open: true,
+          message: "تم تحديث المهمة بنجاح!",
+          severity: "success",
+        });
+      }, 2000);
     } catch (error) {
       console.error("Server Error :", error);
     }
