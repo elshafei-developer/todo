@@ -57,13 +57,25 @@ export default function Todo({ todo }) {
     setShowUpdateDialog(false);
   }
 
-  function handleDeleteConfirm() {
-    const updatedTodos = todos.filter((t) => {
-      return t.id !== todo.id;
-    });
-
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+  async function handleDeleteConfirm() {
+    try {
+      let deletedTodo = await fetch(
+        `https://jsonplaceholder.typicode.com/todos1/${todo.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      if (deletedTodo.status !== 200) {
+        throw new Error("cannot delete todo");
+      }
+      const updatedTodos = todos.filter((t) => {
+        return t.id !== todo.id;
+      });
+      setTodos(updatedTodos);
+      localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    } catch (error) {
+      console.error("Server Error :", error);
+    }
   }
 
   function handleUpdateConfirm() {

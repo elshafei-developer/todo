@@ -106,7 +106,7 @@ export default function TodoList() {
       localStorage.setItem("todos", JSON.stringify(updatedTodos));
       setTitleInput("");
     } catch (error) {
-      console.error("Server Error ", error);
+      console.error("Server Error :", error);
     }
   }
 
