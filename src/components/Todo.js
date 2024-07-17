@@ -34,7 +34,9 @@ export default function Todo({ todo, setNotification }) {
   const handleCheckTodo = async () => {
     try {
       const response = await fetch(
-        `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+        // not working if we use id not in placeholder
+        // `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+        `https://jsonplaceholder.typicode.com/todos/1`,
         {
           method: "PUT",
           body: JSON.stringify({ completed: !todo.completed }),
@@ -92,12 +94,15 @@ export default function Todo({ todo, setNotification }) {
   const handleUpdateConfirm = async () => {
     try {
       const response = await fetch(
-        `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+        // not working if we use id not in placeholder
+        // `https://jsonplaceholder.typicode.com/todos/${todo.id}`,
+        `https://jsonplaceholder.typicode.com/todos/1`,
         {
           method: "PUT",
           body: JSON.stringify({
             title: updatedTodo.title,
-            details: updatedTodo.details,
+            // details: updatedTodo.details,
+            id: todo.id,
           }),
           headers: {
             "Content-type": "application/json; charset=UTF-8",
@@ -117,7 +122,7 @@ export default function Todo({ todo, setNotification }) {
       triggerNotification("تم تحديث المهمة بنجاح!", "success");
     } catch (error) {
       console.error("Server Error :", error);
-      triggerNotification("حدث خطاء", "error");
+      triggerNotification("حدث خطأ ", "error");
     }
   };
 
